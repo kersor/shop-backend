@@ -9,10 +9,26 @@ generator client {
 }
 
 model User {
-  id    Int     @default(autoincrement()) @id
+  id    String     @default(uuid()) @id
   email String  @unique
   name  String?
   surname String?
   password String
   phone String?
+}
+
+model Category {
+  id    String     @default(uuid()) @id
+  name  String
+  products Product[]
+}
+
+model Product {
+  id    String     @default(uuid()) @id
+  name String
+  price String
+  photo String
+
+  category Category @relation(fields: [categoryId], references: [id])
+  categoryId String
 }

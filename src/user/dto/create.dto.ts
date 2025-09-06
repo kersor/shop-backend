@@ -4,7 +4,7 @@ export class CreateUserDto {
 }
 
 export class UserDto {
-    id: number
+    id: string
     email: string
     password: string
     name?: string
