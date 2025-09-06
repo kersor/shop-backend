@@ -35,9 +35,13 @@ export class ProductService {
             }
           }
         }),
-        this.prisma.product.count(),
+        this.prisma.product.count({where: {
+          category: {
+            code: query.category
+          }
+        }}),
       ])
-
+ 
       const totalPages = Math.ceil(total / LIMIT);
       const remainingPages = totalPages - +page;
 
