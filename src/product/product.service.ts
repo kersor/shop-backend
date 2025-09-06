@@ -19,19 +19,51 @@ export class ProductService {
   }
 
   async getAllProduct (query: ProductQueryDto) {
+    const LIMIT = 12
+    const page = query.page || "1"
+    const skip = (+page - 1) * LIMIT
+
+
     if (query.category !== "all") {
-      const products = await this.prisma.product.findMany({
-        where: {
-          category: {
-            code: query.category
+      const [data, total] = await Promise.all([
+        this.prisma.product.findMany({
+          skip,
+          take: LIMIT,
+          where: {
+            category: {
+              code: query.category
+            }
           }
-        }
-      })
-      return products
+        }),
+        this.prisma.product.count(),
+      ])
+
+      const totalPages = Math.ceil(total / LIMIT);
+      const remainingPages = totalPages - +page;
+
+      return {
+        data: data,
+        totalPages,
+        remainingPages 
+      }
     }
     else {
-      const products = await this.prisma.product.findMany()
-      return products
+      const [data, total] = await Promise.all([
+        this.prisma.product.findMany({
+          skip,
+          take: LIMIT,
+        }),
+        this.prisma.product.count(),
+      ])
+
+      const totalPages = Math.ceil(total / LIMIT);
+      const remainingPages = totalPages - +page;
+
+      return {
+        data: data,
+        totalPages,
+        remainingPages 
+      }
     }
   }
 

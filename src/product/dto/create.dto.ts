@@ -16,4 +16,5 @@ export class ProductDto {
 
 export class ProductQueryDto {
     category: string
+    page?: string
 }
