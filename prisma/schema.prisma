@@ -20,6 +20,7 @@ model User {
 model Category {
   id    String     @default(uuid()) @id
   name  String
+  code  String
   products Product[]
 }
 
