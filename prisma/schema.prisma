@@ -15,6 +15,8 @@ model User {
   surname String?
   password String
   phone String?
+
+  cart Cart?
 }
 
 model Category {
@@ -32,4 +34,25 @@ model Product {
 
   category Category @relation(fields: [categoryId], references: [id])
   categoryId String
+
+  carts CartProduct[]
+}
+
+model Cart {
+  id       String       @default(uuid()) @id
+  userId   String       @unique
+  user     User         @relation(fields: [userId], references: [id])
+
+  products CartProduct[]
+}
+
+model CartProduct {
+  cartId String
+  productId String
+  count Int
+
+  cart Cart @relation(fields: [cartId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@id([cartId, productId])
 }
