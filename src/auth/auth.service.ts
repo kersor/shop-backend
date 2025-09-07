@@ -5,6 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserDto } from 'src/user/dto/create.dto';
+import { CartService } from 'src/cart/cart.service';
+import { FavoritesService } from 'src/favorites/favorites.service';
 
 const SALT = Number(process.env.SALT) || 11
 
@@ -14,7 +16,9 @@ export class AuthService {
         readonly prisma: PrismaService,
         @Inject(forwardRef(() => UserService))
         readonly userService: UserService,
-        readonly jwtService: JwtService
+        readonly jwtService: JwtService,
+        readonly cartService: CartService,
+        readonly favoriteService: FavoritesService
     ) {}
 
   async register (dto: IAuth) {
@@ -24,11 +28,12 @@ export class AuthService {
       throw new HttpException("Поль-ль уже существует", HttpStatus.BAD_REQUEST)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const passwordHash = await bcrypt.hash(dto.password, SALT);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {password, ...user} = await this.userService.createUser({password: passwordHash, email: dto.email})
     const token = await this.createToken(user)
+
+    const cart = await this.cartService.createCart(user.id)
+    const favorites = await this.favoriteService.createFavorite(user.id)
 
     return {
       user: user,
@@ -50,7 +55,6 @@ export class AuthService {
       throw new HttpException("Пароль или почта не верны", HttpStatus.BAD_REQUEST)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {password, ...user} = candidate
     const token = await this.createToken(user)
 
