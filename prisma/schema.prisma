@@ -18,6 +18,7 @@ model User {
 
   cart Cart?
   favorite Favorite?
+  orders    Order[]
 }
 
 model Category {
@@ -38,6 +39,7 @@ model Product {
 
   carts CartProduct[]
   favorites FavoriteProduct[]
+  orderProducts OrderProducts[]
 }
 
 model Cart {
@@ -45,7 +47,7 @@ model Cart {
   userId   String       @unique
   user     User         @relation(fields: [userId], references: [id])
 
-  products CartProduct[]
+  products CartProduct[] 
 }
 
 model CartProduct {
@@ -54,7 +56,7 @@ model CartProduct {
   count Int
   createdAt DateTime @default(now())
 
-  cart Cart @relation(fields: [cartId], references: [id])
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
 
   @@id([cartId, productId])
@@ -77,3 +79,23 @@ model FavoriteProduct {
 
   @@id([favoriteId, productId])
 } 
+
+model Order {
+  id       String       @default(uuid()) @id
+  userId   String       
+  user     User         @relation(fields: [userId], references: [id])
+  total     Int
+  createdAt DateTime @default(now())
+
+  products OrderProducts[]
+}
+
+model OrderProducts {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  count Int
+  price Int
+}
