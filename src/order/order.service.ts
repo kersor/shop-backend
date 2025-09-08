@@ -34,6 +34,16 @@ export class OrderService {
             data: ordersProducts
         })
 
+        const cart = await this.prisma.cart.findFirst({where: {userId: user.id}})
+
+        const ca = await this.prisma.cartProduct.deleteMany({
+            where: {
+                cartId: cart?.id
+            }
+        })
+
+        console.log(ca)
+
         return orderProducts
     } 
 
@@ -54,14 +64,6 @@ export class OrderService {
             }
         })
         
-        const cart = await this.prisma.cart.findFirst({where: {userId: user.id}})
-
-        await this.prisma.cartProduct.deleteMany({
-            where: {
-                cartId: cart?.id
-            }
-        })
-
 
         return orders
     }

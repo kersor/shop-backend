@@ -1,6 +1,7 @@
-import { Controller, Post, Body, Get, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, Query, Req } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto, ProductQueryDto } from './dto/create.dto';
+import { Request } from 'express';
 
 @Controller('product')
 export class ProductController {
@@ -12,8 +13,9 @@ export class ProductController {
   }
 
   @Get()
-  async getAllProduct (@Query() query: ProductQueryDto) {
-    return this.productService.getAllProduct(query);
+  async getAllProduct (@Query() query: ProductQueryDto, @Req() req: Request) {
+    const token = req.headers.authorization?.split(' ')[1] || ""
+    return this.productService.getAllProduct(query, token);
   }
 
   @Get(":id")

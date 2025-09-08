@@ -14,26 +14,33 @@ export class CartService {
     async addCartProduct (dto: AddProductDto, token: string) {
         const {cart, user} = await this.foundCartUser(token)
 
-        const cartProduct = await this.prisma.cartProduct.upsert({
+        const foundCart = await this.prisma.cartProduct.findFirst({
             where: {
-                cartId_productId: {
-                    cartId: cart?.id,
-                    productId: dto.productId,
-                },
-            },
-            update: {
-                count: {
-                    increment: 1
-                }
-            },
-            create: {
-                productId: dto.productId,
-                count: 1,
-                cartId: cart?.id,
+                cartId: cart.id,
+                productId: dto.productId
             }
         })
 
-        return cartProduct
+        if (!foundCart) {
+            const newCart = await this.prisma.cartProduct.create({
+                data: {
+                    productId: dto.productId,
+                    count: 1,
+                    cartId: cart?.id,
+                }
+            })
+            return newCart
+        } else {
+            const delCart = await this.prisma.cartProduct.delete({
+                where: {
+                    cartId_productId: {
+                        cartId: cart?.id,
+                        productId: dto.productId,
+                    },
+                }
+            })
+            return delCart
+        }
     }
 
     async getCartProducts (token: string) {
@@ -44,7 +51,11 @@ export class CartService {
                 cartId: cart.id
             },
             include: {
-                product: true
+                product: {
+                    include: {
+                        favorites: true,
+                    }
+                },
             },
             orderBy: {
                 createdAt: 'asc'
@@ -99,16 +110,26 @@ export class CartService {
         return delProduct
     }
 
-    async getCartCountProducts (token: string) {
+    async getCartAndFavoriteCountProducts (token: string) {
+        const {favorite} = await this.foundFavoriteUser(token)
         const {cart, user} = await this.foundCartUser(token)
 
-        const count = await this.prisma.cartProduct.count({
+        const countCart = await this.prisma.cartProduct.count({
             where: {
                 cartId: cart.id
             }
         })
 
-        return count
+        const countFavorite = await this.prisma.favoriteProduct.count({
+            where: {
+                favoriteId: favorite.id
+            }
+        })
+
+        return {
+            countCart,
+            countFavorite
+        }
     }
 
 
@@ -128,6 +149,21 @@ export class CartService {
         }
     }
 
+    async foundFavoriteUser (token: string) {
+        const user = await this.jwtService.verify(token)
+        if (!user) throw new HttpException("Неверный токен", 401)
+
+        const favorite = await this.prisma.favorite.findFirst({where: {
+            userId: user.id,
+        }})
+
+        if (!favorite) throw new HttpException("Не найдена изьранное", 400)
+
+        return {
+            user,
+            favorite
+        }
+    }
 
 
     async createCart (id: string) {

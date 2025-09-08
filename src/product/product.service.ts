@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateProductDto, ProductQueryDto } from './dto/create.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class ProductService {
   constructor (
-    readonly prisma: PrismaService
+    readonly prisma: PrismaService,
+    readonly jwtService: JwtService
   ) {}
 
   async createProduct (dto: CreateProductDto) {
@@ -18,58 +20,57 @@ export class ProductService {
     return product
   }
 
-  async getAllProduct (query: ProductQueryDto) {
-    const LIMIT = 12
-    const page = query.page || "1"
-    const skip = (+page - 1) * LIMIT
+  async getAllProduct(query: ProductQueryDto, token?: string) {
+    let favoriteId: string | null = null;
+    let cartId: string | null = null;
 
+    if (token) {
+      try {
+        const { favorite, user } = await this.foundFavoriteUser(token);
+        favoriteId = favorite.id;
 
-    if (query.category !== "all") {
-      const [data, total] = await Promise.all([
-        this.prisma.product.findMany({
-          skip,
-          take: LIMIT,
-          where: {
-            category: {
-              code: query.category
-            }
-          }
-        }),
-        this.prisma.product.count({where: {
-          category: {
-            code: query.category
-          }
-        }}),
-      ])
- 
-      const totalPages = Math.ceil(total / LIMIT);
-      const remainingPages = totalPages - +page;
-
-      return {
-        data: data,
-        totalPages,
-        remainingPages 
+        const cart = await this.prisma.cart.findUnique({ where: { userId: user.id } });
+        cartId = cart?.id || null;
+      } catch {
+        favoriteId = null;
+        cartId = null;
       }
     }
-    else {
-      const [data, total] = await Promise.all([
-        this.prisma.product.findMany({
-          skip,
-          take: LIMIT,
-        }),
-        this.prisma.product.count(),
-      ])
 
-      const totalPages = Math.ceil(total / LIMIT);
-      const remainingPages = totalPages - +page;
+    const LIMIT = 12;
+    const page = query.page || '1';
+    const skip = (+page - 1) * LIMIT;
 
-      return {
-        data: data,
-        totalPages,
-        remainingPages 
-      }
-    }
+    const whereClause = query.category !== 'all' ? { category: { code: query.category } } : {};
+
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        skip,
+        take: LIMIT,
+        where: whereClause,
+        include: {
+          favorites: favoriteId ? { where: { favoriteId } } : false,
+          carts: cartId ? { where: { cartId } } : false,
+        },
+      }),
+      this.prisma.product.count({ where: whereClause }),
+    ]);
+
+    // Преобразуем массивы в true/false
+    const data = products.map(p => ({
+      ...p,
+      isFavorite: favoriteId ? p.favorites.length > 0 : false,
+      inCart: cartId ? p.carts.length > 0 : false,
+      favorites: undefined,
+      carts: undefined,
+    }));
+
+    const totalPages = Math.ceil(total / LIMIT);
+    const remainingPages = totalPages - +page;
+
+    return { data, totalPages, remainingPages };
   }
+
 
   async getOneProduct (id: string) {
     const product = await this.prisma.product.findFirst({
@@ -85,5 +86,22 @@ export class ProductService {
     })
 
     return product
+  }
+
+  
+  async foundFavoriteUser (token: string) {
+      const user = await this.jwtService.verify(token)
+      if (!user) throw new HttpException("Неверный токен", 401)
+
+      const favorite = await this.prisma.favorite.findFirst({where: {
+          userId: user.id,
+      }})
+
+      if (!favorite) throw new HttpException("Не найдено избранное", 400)
+
+      return {
+          user,
+          favorite
+      }
   }
 }

@@ -37,9 +37,9 @@ export class CartController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('/countTotal')
-  async getCartCountProducts (@Req() req: Request) {
+  @Get('/countTotalCartAndFavorite')
+  async getCartAndFavoriteCountProducts (@Req() req: Request) {
     const token = req.headers.authorization?.split(' ')[1] || ""
-    return this.cartService.getCartCountProducts(token)
+    return this.cartService.getCartAndFavoriteCountProducts(token)
   }
 }

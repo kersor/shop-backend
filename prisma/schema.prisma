@@ -73,6 +73,7 @@ model Favorite {
 model FavoriteProduct { 
   favoriteId String
   productId String
+  createdAt DateTime @default(now())
 
   favorite Favorite @relation(fields: [favoriteId], references: [id])
   product Product @relation(fields: [productId], references: [id])
