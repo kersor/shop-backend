@@ -19,5 +19,7 @@
     "noFallthroughCasesInSwitch": false,
     "types": ["node"],
     "rootDir": "./src"
-  }
+  },
+    "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
