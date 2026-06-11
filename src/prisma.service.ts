@@ -1,17 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaClient } from './generated/prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client'; // Стандартный дефолтный импорт
 
 @Injectable()
-export class PrismaService extends PrismaClient {
-  constructor() {
-    const url = process.env.DATABASE_URL;
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  
+  // Метод вызывается при старте NestJS
+  async onModuleInit() {
+    await this.$connect();
+  }
 
-    if (!url) {
-      throw new Error('DATABASE_URL is not defined');
-    }
-
-    const adapter = new PrismaPg(url);
-    super({ adapter });
+  // Метод вызывается при остановке NestJS
+  async onModuleDestroy() {
+    await this.$disconnect();
   }
 }
