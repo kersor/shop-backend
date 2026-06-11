@@ -28,8 +28,18 @@ export class LocationsService {
         })
     }
 
-    async getAll (): Promise<Location[] | null> {
-        return this.prisma.location.findMany()
+    async getAll (limit?: string, search?: string): Promise<Location[] | null> {
+        return this.prisma.location.findMany({
+            where: search
+            ? {
+                name: {
+                    contains: search,
+                    mode: 'insensitive',
+                },
+                }
+            : undefined,
+            take: limit ? +limit : undefined,
+        });
     }
 
     async deleteLocation (id: string) {

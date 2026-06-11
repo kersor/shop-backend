@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { LocationsService } from './locations.service';
 import { CreateLocationDto } from './dto/create-locations.dto';
 import { Location } from '@prisma/client';
@@ -18,9 +18,11 @@ export class LocationsController {
   }
 
   @Get()
-  async getAll (): Promise<Location[] | null> {
-    console.log(123)
-    return this.locationsService.getAll()
+  async getAll (
+    @Query('limit') limit?: string,
+    @Query('search') search?: string
+  ): Promise<Location[] | null> {
+    return this.locationsService.getAll(limit, search)
   }
 
   @Delete(':id')
