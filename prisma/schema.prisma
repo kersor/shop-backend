@@ -18,3 +18,14 @@ model Location {
   name String
   slug     String @unique
 }
+
+model Category {
+  id    String  @id @default(uuid())
+  name String
+  slug String
+
+  parentId String?
+
+  perent Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+}
