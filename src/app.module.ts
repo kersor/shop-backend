@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { LocationsModule } from './locations/locations.module';
 import { PrismaService } from './prisma.service';
 import { CategoriesModule } from './categories/categories.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CategoriesModule } from './categories/categories.module';
     ProductsModule,
     LocationsModule,
     CategoriesModule,
+    ProductModule,
   ],
   controllers: [],
   providers: [],

@@ -26,6 +26,45 @@ model Category {
 
   parentId String?
 
-  perent Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  parent Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children Category[] @relation("CategoryHierarchy")
+
+  products Product[]
+}
+
+model Product {
+  id    String  @id @default(uuid())
+  name String
+  price Float
+  sale Boolean
+  slug String
+  description String
+  rating Float
+  date DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categoryId String
+  category Category @relation(fields: [categoryId], references: [id])
+
+  attributes ProductAttributeValue[]
+}
+
+model Attribute {
+  id    String  @id @default(uuid())
+  name String
+  unit String
+
+  values ProductAttributeValue[]
+}
+
+model ProductAttributeValue {
+  productId String
+  product Product @relation(fields: [productId], references: [id])
+
+  attributeId String
+  attribute Attribute @relation(fields: [attributeId], references: [id])
+
+  value String
+  @@id([productId, attributeId])
 }
