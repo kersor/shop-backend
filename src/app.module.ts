@@ -5,6 +5,7 @@ import { LocationsModule } from './locations/locations.module';
 import { PrismaService } from './prisma.service';
 import { CategoriesModule } from './categories/categories.module';
 import { AttributesModule } from './attributes/attributes.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AttributesModule } from './attributes/attributes.module';
     LocationsModule,
     CategoriesModule,
     AttributesModule,
+    UploadModule,
   ],
   controllers: [],
   providers: [],

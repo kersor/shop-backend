@@ -40,7 +40,6 @@ model Product {
   slug String
   description String
   rating Float
-  date DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -48,6 +47,7 @@ model Product {
   category Category @relation(fields: [categoryId], references: [id])
 
   attributes ProductAttributeValue[]
+  productPhoto ProductPhoto[]
 }
 
 model Attribute {
@@ -67,4 +67,12 @@ model ProductAttributeValue {
 
   value String
   @@id([productId, attributeId])
+}
+
+model ProductPhoto {
+  id    String  @id @default(uuid())
+  photo_url String
+
+  productId String
+  product Product @relation(fields: [productId], references: [id])
 }
