@@ -1,4 +1,4 @@
- import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCategoryCatalogDto, CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -67,9 +67,47 @@ export class CategoriesService {
     });
   }
 
-  async getAllCategories (): Promise<Category[]> {
-    const results = await this.prisma.category.findMany()
-    return results
+
+  async getAllCategories(
+    search: string | undefined,
+    page: string,
+  ) {
+    const pageNumber = Math.max(Number(page) || 1, 1)
+    const pageSize = 20
+
+    const where = search?.length
+      ? {
+          OR: [
+            { name: { contains: search } },
+            { slug: { contains: search } },
+            { parentId: { contains: search } },
+          ],
+        }
+      : undefined
+
+    const [data, total] = await Promise.all([
+      this.prisma.category.findMany({
+        where,
+        skip: (pageNumber - 1) * pageSize,
+        take: pageSize,
+      }),
+
+      this.prisma.category.count({
+        where,
+      }),
+    ])
+
+    const totalPages = Math.ceil(total / pageSize)
+
+    return {
+      data,
+      pagination: {
+        page: +pageNumber,
+        pageSize: +pageSize,
+        total: +total,
+        totalPages: +totalPages,
+      },
+    }
   }
   
   async deleteCategories (id: string) {

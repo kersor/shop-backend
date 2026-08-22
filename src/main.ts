@@ -9,7 +9,10 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: 'http://localhost:3000', // Укажите точный адрес фронтенда
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ], // Укажите точный адрес фронтенда
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Теперь это будет работать легально
   });

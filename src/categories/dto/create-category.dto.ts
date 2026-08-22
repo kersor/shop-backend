@@ -9,3 +9,10 @@ export class CreateCategoryCatalogDto {
     slug!: string
     children?: CreateCategoryCatalogDto[]
 }
+
+export class PaginationDto {
+    page!: number
+    pageSize!: number
+    total!: number
+    totalPages!: number
+}

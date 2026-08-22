@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryCatalogDto, CreateCategoryDto } from './dto/create-category.dto';
+import { CreateCategoryCatalogDto, CreateCategoryDto, PaginationDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from '@prisma/client';
 
@@ -19,8 +19,12 @@ export class CategoriesController {
   }
 
   @Get()
-  async getAllCategories (): Promise<Category[]> {
-    return this.categoriesService.getAllCategories()
+  async getAllCategories (
+    @Query('page') page: string,
+    @Query('search') search: string | undefined,
+  ): Promise<{ data: Category[]; pagination: PaginationDto }> {
+    
+    return this.categoriesService.getAllCategories(search, page);
   }
 
   @Get('/catalog')
